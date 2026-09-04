@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+eggs/
+*.egg
+
+# Virtual Environment
+venv/
+.venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment
+.env.local
+.env.production
+
+# Runtime data
+uploads/
+sandbox/
+workspace/
+qdrant_data/
+
+# Logs
+*.log
+logs/
+
+# Runtime data
+uploads/
+workspace/
+sandbox/
+qdrant_data/
