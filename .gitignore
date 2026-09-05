@@ -46,3 +46,5 @@ uploads/
 workspace/
 sandbox/
 qdrant_data/
+data/
+eurekax.db

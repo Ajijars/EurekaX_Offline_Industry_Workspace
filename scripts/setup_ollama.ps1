@@ -68,3 +68,4 @@ Write-Host "  1. pip install -r requirements.txt" -ForegroundColor White
 Write-Host "  2. uvicorn app.main:app --reload" -ForegroundColor White
 Write-Host "  3. Open http://localhost:8000" -ForegroundColor White
 Write-Host ""
+

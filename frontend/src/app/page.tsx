@@ -3,6 +3,7 @@
 /**
  * Main Chat Page — assembles Sidebar + ChatHeader + Messages + ChatInput.
  * Renders WelcomeScreen when no messages exist.
+ * Protected by AuthGuard — redirects to /login if unauthenticated.
  */
 
 import { useEffect, useRef } from 'react';
@@ -13,6 +14,7 @@ import WelcomeScreen from '@/components/chat/WelcomeScreen';
 import MessageBubble from '@/components/chat/MessageBubble';
 import TypingIndicator from '@/components/chat/TypingIndicator';
 import ChatInput from '@/components/chat/ChatInput';
+import AuthGuard from '@/components/auth/AuthGuard';
 import { useChat } from '@/hooks/useChat';
 import { useHealth } from '@/hooks/useHealth';
 
@@ -30,14 +32,14 @@ export default function HomePage() {
   const hasMessages = messages.length > 0;
 
   return (
-    <>
+    <AuthGuard>
       <AmbientBackground />
       <div className="app-layout">
         <Sidebar />
         <main className="chat-main">
           <ChatHeader />
 
-          <div className="messages-container">
+          <div className="messages-area">
             {!hasMessages ? (
               <WelcomeScreen onSend={sendMessage} />
             ) : (
@@ -56,6 +58,6 @@ export default function HomePage() {
           <ChatInput onSend={sendMessage} />
         </main>
       </div>
-    </>
+    </AuthGuard>
   );
 }

@@ -17,6 +17,13 @@ from app.config import get_settings
 from app.api.routes import router as api_router
 from app.api.routes import rag_router
 from app.api.routes import agent_router
+from app.auth.router import auth_router
+from app.api.governance_router import governance_router
+from app.api.security_router import security_router
+from app.api.query_router import query_router
+from app.api.workspace_router import workspace_router
+from app.api.pipeline_router import pipeline_router
+from app.api.jobs_router import jobs_router
 
 # Configure logging
 logging.basicConfig(
@@ -60,10 +67,17 @@ app.add_middleware(
 # Routes & Static Files
 # ──────────────────────────────────────────────
 
-# Include API routes (Step 1: LLM + Step 2: RAG + Step 3: Agent)
+# Include all API routers
+app.include_router(auth_router)
 app.include_router(api_router)
 app.include_router(rag_router)
 app.include_router(agent_router)
+app.include_router(governance_router)
+app.include_router(security_router)
+app.include_router(query_router)
+app.include_router(workspace_router)
+app.include_router(pipeline_router)
+app.include_router(jobs_router)
 
 # Mount static files (frontend)
 app.mount(
@@ -86,6 +100,10 @@ async def root():
 @app.on_event("startup")
 async def startup_event():
     """Log startup info, check Ollama & Qdrant connectivity, init collections."""
+    # Initialize SQLite database (creates tables if not exist)
+    from app.db.database import init_db
+    await init_db()
+
     logger.info("=" * 55)
     logger.info(f"  {settings.APP_TITLE} v{settings.APP_VERSION}")
     logger.info(f"  Ollama URL   : {settings.OLLAMA_BASE_URL}")

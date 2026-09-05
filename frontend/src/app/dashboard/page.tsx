@@ -1,13 +1,14 @@
 'use client';
 
 /**
- * Dashboard Page — system health cards, vector store stats, and model information.
+ * Dashboard Page — system health, stats, and model information.
  */
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Server, Database, Brain, Cpu, FileText, Layers } from 'lucide-react';
-import AmbientBackground from '@/components/layout/AmbientBackground';
+import Sidebar from '@/components/layout/Sidebar';
+import AuthGuard from '@/components/auth/AuthGuard';
 import { useHealth } from '@/hooks/useHealth';
 import { useAppStore } from '@/stores/appStore';
 import { getModels, getRAGStats, getAgentStatus } from '@/lib/api';
@@ -45,24 +46,20 @@ export default function DashboardPage() {
   );
 
   return (
-    <>
-      <AmbientBackground />
+    <AuthGuard>
       <div className="app-layout">
+        <Sidebar />
         <main className="chat-main">
           <div className="dashboard-page">
-            {/* Back link */}
             <Link href="/" className="back-link">
               <ArrowLeft size={16} />
               Back to Chat
             </Link>
 
-            {/* Title */}
-            <div>
-              <h1 className="dashboard-title">System Dashboard</h1>
-              <p className="dashboard-subtitle">
-                Monitor services, view statistics, and check system health
-              </p>
-            </div>
+            <h1 className="dashboard-title">System Dashboard</h1>
+            <p className="dashboard-subtitle">
+              Monitor services, view statistics, and check system health
+            </p>
 
             {/* Service Health Grid */}
             <div>
@@ -70,23 +67,17 @@ export default function DashboardPage() {
                 Service Health
               </p>
               <div className="dashboard-grid">
-                {/* API */}
                 <div className="dash-card">
                   <div className="dash-card-header">
-                    <div className="dash-card-icon green-icon">
-                      <Server size={18} />
-                    </div>
+                    <div className="dash-card-icon green-icon"><Server size={18} /></div>
                     <span className="dash-card-title">FastAPI Server</span>
                   </div>
                   <StatusBadge status={health.api} />
                 </div>
 
-                {/* Ollama */}
                 <div className="dash-card">
                   <div className="dash-card-header">
-                    <div className="dash-card-icon chat-icon">
-                      <Brain size={18} />
-                    </div>
+                    <div className="dash-card-icon chat-icon"><Brain size={18} /></div>
                     <span className="dash-card-title">Ollama LLM</span>
                   </div>
                   <StatusBadge status={health.ollama} />
@@ -95,23 +86,17 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Qdrant */}
                 <div className="dash-card">
                   <div className="dash-card-header">
-                    <div className="dash-card-icon rag-icon">
-                      <Database size={18} />
-                    </div>
+                    <div className="dash-card-icon rag-icon"><Database size={18} /></div>
                     <span className="dash-card-title">Qdrant Vector DB</span>
                   </div>
                   <StatusBadge status={health.qdrant} />
                 </div>
 
-                {/* LangGraph */}
                 <div className="dash-card">
                   <div className="dash-card-header">
-                    <div className="dash-card-icon agent-icon">
-                      <Cpu size={18} />
-                    </div>
+                    <div className="dash-card-icon agent-icon"><Cpu size={18} /></div>
                     <span className="dash-card-title">LangGraph Agents</span>
                   </div>
                   <StatusBadge status={health.langgraph} />
@@ -125,12 +110,9 @@ export default function DashboardPage() {
                 Statistics
               </p>
               <div className="dashboard-grid">
-                {/* Models */}
                 <div className="dash-card">
                   <div className="dash-card-header">
-                    <div className="dash-card-icon chat-icon">
-                      <Layers size={18} />
-                    </div>
+                    <div className="dash-card-icon chat-icon"><Layers size={18} /></div>
                     <span className="dash-card-title">Available Models</span>
                   </div>
                   <div className="dash-card-value">{models.length}</div>
@@ -139,12 +121,9 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Documents */}
                 <div className="dash-card">
                   <div className="dash-card-header">
-                    <div className="dash-card-icon rag-icon">
-                      <FileText size={18} />
-                    </div>
+                    <div className="dash-card-icon rag-icon"><FileText size={18} /></div>
                     <span className="dash-card-title">Indexed Documents</span>
                   </div>
                   <div className="dash-card-value">
@@ -155,12 +134,9 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Agents */}
                 <div className="dash-card">
                   <div className="dash-card-header">
-                    <div className="dash-card-icon agent-icon">
-                      <Cpu size={18} />
-                    </div>
+                    <div className="dash-card-icon agent-icon"><Cpu size={18} /></div>
                     <span className="dash-card-title">Available Agents</span>
                   </div>
                   <div className="dash-card-value">
@@ -171,12 +147,9 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Vector Collection */}
                 <div className="dash-card">
                   <div className="dash-card-header">
-                    <div className="dash-card-icon green-icon">
-                      <Database size={18} />
-                    </div>
+                    <div className="dash-card-icon green-icon"><Database size={18} /></div>
                     <span className="dash-card-title">Vector Collection</span>
                   </div>
                   <div className="dash-card-value">
@@ -191,6 +164,6 @@ export default function DashboardPage() {
           </div>
         </main>
       </div>
-    </>
+    </AuthGuard>
   );
 }

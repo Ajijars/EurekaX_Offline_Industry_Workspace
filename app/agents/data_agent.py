@@ -122,11 +122,42 @@ async def data_agent_node(state: AgentState) -> AgentState:
                 }
 
         if not data_file:
-            answer = (
-                "No data file (CSV, JSON, or Excel) was found, and Databricks is not configured. "
-                "Upload a data file, or set DATABRICKS_HOST / DATABRICKS_TOKEN / DATABRICKS_HTTP_PATH in .env."
+            # Fallback to querying the internal data catalog!
+            from app.agents.catalog_tool import get_catalog_context, execute_catalog_query
+            
+            catalog_context = await get_catalog_context()
+            
+            # Step 1: Generate SQL for the catalog
+            sql_prompt = (
+                f"Convert the user's question into a SQLite SQL query against the internal catalog.\n\n"
+                f"{catalog_context}\n\n"
+                f"User question: {query}\n\n"
+                f"SQL:"
             )
-            step["result"] = "No data file and Databricks unavailable."
+            
+            sql_res = await ollama_service.generate(prompt=sql_prompt, temperature=0.0)
+            sql_query = _extract_sql(sql_res["response"])
+            
+            step["result"] = f"Generated Catalog SQL: {sql_query}"
+            
+            # Step 2: Execute SQL
+            rows_json = await execute_catalog_query(sql_query)
+            
+            # Step 3: Interpret
+            answer_prompt = (
+                f"You are a data analyst. The user asked a question that was answered with SQL.\n\n"
+                f"SQL executed: {sql_query}\n\n"
+                f"Rows (JSON): {rows_json}\n\n"
+                f"User question: {query}\n\n"
+                f"Explain the results clearly.\n\n"
+                f"Answer:"
+            )
+            
+            final_res = await ollama_service.generate(prompt=answer_prompt, temperature=0.2)
+            answer = final_res["response"]
+            
+            step["result"] += f" | Retrieved {len(json.loads(rows_json)) if rows_json.startswith('[') else 0} rows"
+            
             return {
                 **state,
                 "final_answer": answer,

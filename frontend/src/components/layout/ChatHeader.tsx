@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * ChatHeader — top bar with mode-colored title, model pill, and action buttons.
+ * ChatHeader — top bar with mode indicator, model pill, and action buttons.
  */
 
 import { useAppStore } from '@/stores/appStore';
@@ -10,18 +10,18 @@ import { Menu, Trash2 } from 'lucide-react';
 const MODE_CONFIG = {
   chat: {
     title: 'Local LLM Chat',
-    pill: 'Chat',
-    pillClass: 'chat-pill',
+    badge: 'Chat',
+    badgeClass: 'badge-chat',
   },
   rag: {
     title: 'RAG Document Q&A',
-    pill: 'RAG',
-    pillClass: 'rag-pill',
+    badge: 'RAG',
+    badgeClass: 'badge-rag',
   },
   agent: {
-    title: '🤖 Multi-Agent Workflow',
-    pill: 'Agent',
-    pillClass: 'agent-pill',
+    title: 'Multi-Agent Workflow',
+    badge: 'Agent',
+    badgeClass: 'badge-agent',
   },
 } as const;
 
@@ -37,25 +37,21 @@ export default function ChatHeader() {
     <header className="chat-header">
       <div className="header-left">
         <button
-          className="icon-btn"
+          className="icon-btn icon-btn-md"
           onClick={toggleSidebar}
           title="Toggle Sidebar"
         >
           <Menu size={18} />
         </button>
-        <div className="header-title-group">
-          <h1 className="header-title">{config.title}</h1>
-          <div className="header-meta">
-            <span className="header-model-pill">{currentModel}</span>
-            <span className={`header-mode-pill ${config.pillClass}`}>
-              {config.pill}
-            </span>
-          </div>
-        </div>
+        <span className={`header-mode-badge ${config.badgeClass}`}>
+          {config.badge}
+        </span>
+        <span className="header-title">{config.title}</span>
+        <span className="header-subtitle">{currentModel}</span>
       </div>
       <div className="header-right">
         <button
-          className="icon-btn"
+          className="icon-btn icon-btn-md"
           onClick={clearMessages}
           title="Clear chat"
         >

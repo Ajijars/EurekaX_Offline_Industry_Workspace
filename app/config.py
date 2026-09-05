@@ -58,6 +58,12 @@ class Settings(BaseSettings):
     DATABRICKS_CATALOG: str = ""
     DATABRICKS_SCHEMA: str = ""
 
+    # JWT / Authentication
+    JWT_SECRET_KEY: str = "eurekax-super-secret-change-me-in-production"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

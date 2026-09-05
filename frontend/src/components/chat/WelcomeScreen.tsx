@@ -1,54 +1,48 @@
 'use client';
 
 /**
- * WelcomeScreen — hero landing with capability cards.
- * Clicking a card sets the mode and fills the input with a sample prompt.
+ * WelcomeScreen — clean enterprise hero with capability cards.
  */
 
-import { Layers } from 'lucide-react';
+import { MessageSquare, FileText, Code, Bot, Layers } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 
 interface CapCard {
-  emoji: string;
+  icon: React.ElementType;
   title: string;
   desc: string;
   prompt: string;
   mode: 'chat' | 'rag' | 'agent';
-  colorClass: string;
 }
 
 const CAPABILITIES: CapCard[] = [
   {
-    emoji: '💬',
+    icon: MessageSquare,
     title: 'Chat',
-    desc: 'General Q&A with Ollama',
+    desc: 'General Q&A with local LLM',
     prompt: 'What is machine learning and how does it work?',
     mode: 'chat',
-    colorClass: 'cap-chat',
   },
   {
-    emoji: '📚',
+    icon: FileText,
     title: 'RAG',
     desc: 'Search indexed documents',
     prompt: 'What does the document say about the main topic?',
     mode: 'rag',
-    colorClass: 'cap-rag',
   },
   {
-    emoji: '💻',
+    icon: Code,
     title: 'Code Agent',
     desc: 'Generate & run Python',
     prompt: 'Write and execute Python code to calculate the first 20 Fibonacci numbers',
     mode: 'agent',
-    colorClass: 'cap-code',
   },
   {
-    emoji: '🤖',
+    icon: Bot,
     title: 'File Agent',
     desc: 'Read, write & manage files',
     prompt: 'List the files in the workspace directory',
     mode: 'agent',
-    colorClass: 'cap-agent',
   },
 ];
 
@@ -61,34 +55,32 @@ export default function WelcomeScreen({ onSend }: WelcomeScreenProps) {
 
   const handleClick = (card: CapCard) => {
     setMode(card.mode);
-    // Small delay for mode to update, then send
     setTimeout(() => onSend(card.prompt), 80);
   };
 
   return (
     <div className="welcome-screen">
-      <div className="welcome-glow" aria-hidden="true" />
-      <div className="welcome-logo">
-        <Layers size={40} />
+      <div className="welcome-icon">
+        <Layers size={28} />
       </div>
-      <h2 className="welcome-title">SIH Local AI Assistant</h2>
+      <h2 className="welcome-title">EurekaX AI Assistant</h2>
       <p className="welcome-subtitle">
-        Fully offline · RAG-powered · Multi-Agent Orchestration
+        Enterprise AI platform — local LLM, RAG document search, and multi-agent workflows
       </p>
 
-      <div className="capability-cards">
+      <div className="welcome-prompts">
         {CAPABILITIES.map((card) => (
-          <div
+          <button
             key={card.title}
-            className={`cap-card ${card.colorClass}`}
+            className="welcome-prompt-btn"
             onClick={() => handleClick(card)}
           >
-            <div className="cap-icon">{card.emoji}</div>
-            <div className="cap-text">
-              <strong>{card.title}</strong>
-              <span>{card.desc}</span>
+            <card.icon size={16} />
+            <div>
+              <div style={{ fontWeight: 600, color: 'var(--text-1)', marginBottom: 2 }}>{card.title}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>{card.desc}</div>
             </div>
-          </div>
+          </button>
         ))}
       </div>
     </div>

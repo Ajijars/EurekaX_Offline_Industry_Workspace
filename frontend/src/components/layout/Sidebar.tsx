@@ -2,18 +2,30 @@
 
 /**
  * Sidebar — mode selector, document/agent uploads, model/temp controls, status indicators.
+ * Now includes user info and logout.
  */
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import {
   Layers,
   Plus,
   MessageSquare,
   FileText,
   Settings,
+  LogOut,
+  LayoutDashboard,
+  User as UserIcon,
+  Shield,
+  Database,
+  GitBranch,
+  Clock,
+  Activity,
 } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
+import { useAuthStore } from '@/stores/authStore';
 import { getModels } from '@/lib/api';
+import { logout } from '@/lib/auth';
 import { useDocuments } from '@/hooks/useDocuments';
 import type { ModelInfo } from '@/lib/types';
 import DocumentUpload from '@/components/rag/DocumentUpload';
@@ -31,21 +43,34 @@ export default function Sidebar() {
   const clearMessages = useAppStore((s) => s.clearMessages);
   const health = useAppStore((s) => s.health);
 
+  const user = useAuthStore((s) => s.user);
+
   const { documents, uploading, uploadProgress, upload, remove } = useDocuments();
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Load models on mount
   useEffect(() => {
+    let mounted = true;
     getModels()
       .then((data) => {
-        setModels(data.models || []);
-        if (data.default_model) setCurrentModel(data.default_model);
+        if (mounted) {
+          setModels(data.models || []);
+          const storeModel = useAppStore.getState().currentModel;
+          // Only set to default if we don't have a model selected yet
+          // or if the currently selected model isn't in the fetched list
+          const hasCurrentModel = data.models?.some((m: any) => m.name === storeModel);
+          if (data.default_model && (!storeModel || !hasCurrentModel)) {
+            useAppStore.getState().setCurrentModel(data.default_model);
+          }
+        }
       })
       .catch(() => {
-        setModels([{ name: currentModel, size: null, modified_at: null }]);
+        if (mounted) {
+          setModels([{ name: useAppStore.getState().currentModel, size: null, modified_at: null }]);
+        }
       });
-  }, [currentModel, setCurrentModel]);
+    return () => { mounted = false; };
+  }, []);
 
   // Track mobile breakpoint
   useEffect(() => {
@@ -86,8 +111,8 @@ export default function Sidebar() {
             <Layers size={18} />
           </div>
           <div className="logo-text-group">
-            <span className="logo-title">SIH Assistant</span>
-            <span className="logo-sub">AI Platform v3.0</span>
+            <span className="logo-title">EurekaX</span>
+            <span className="logo-sub">Data Platform v4.0</span>
           </div>
         </div>
         <button className="icon-btn icon-btn-sm" onClick={clearMessages} title="New Chat">
@@ -122,6 +147,53 @@ export default function Sidebar() {
               <Settings size={13} />
               <span>Agent</span>
             </button>
+          </div>
+        </div>
+
+        {/* Navigation Links */}
+        <div className="sidebar-section">
+          <p className="section-label">Navigate</p>
+          <div className="sidebar-nav-links">
+            <Link href="/dashboard" className="sidebar-nav-link">
+              <LayoutDashboard size={15} />
+              <span>Dashboard</span>
+            </Link>
+            <Link href="/sql-editor" className="sidebar-nav-link">
+              <Database size={15} />
+              <span>SQL Editor</span>
+            </Link>
+            <Link href="/workspace" className="sidebar-nav-link">
+              <FileText size={15} />
+              <span>Notebooks</span>
+            </Link>
+            <Link href="/governance" className="sidebar-nav-link">
+              <Layers size={15} />
+              <span>Data Catalog</span>
+            </Link>
+            <Link href="/pipelines" className="sidebar-nav-link">
+              <GitBranch size={15} />
+              <span>Pipelines</span>
+            </Link>
+            <Link href="/jobs" className="sidebar-nav-link">
+              <Activity size={15} />
+              <span>Jobs Monitor</span>
+            </Link>
+            {user?.role === 'admin' && (
+              <>
+                <Link href="/security" className="sidebar-nav-link admin-link">
+                  <Shield size={15} />
+                  <span>Security</span>
+                </Link>
+                <Link href="/audit" className="sidebar-nav-link admin-link">
+                  <Clock size={15} />
+                  <span>Audit Log</span>
+                </Link>
+                <Link href="/admin" className="sidebar-nav-link admin-link">
+                  <Shield size={15} />
+                  <span>Admin Panel</span>
+                </Link>
+              </>
+            )}
           </div>
         </div>
 
@@ -204,11 +276,32 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* ── Footer ── */}
+      {/* ── Footer: User Profile ── */}
       <div className="sidebar-footer">
-        <div className="footer-badge">Step 3 · Multi-Agent</div>
-        <span className="footer-ver">v3.0.0</span>
+        {user ? (
+          <div className="sidebar-user">
+            <div className="sidebar-user-avatar">
+              <UserIcon size={16} />
+            </div>
+            <div className="sidebar-user-info">
+              <span className="sidebar-user-name">{user.username}</span>
+              <span className={`sidebar-user-role ${user.role}`}>
+                {user.role === 'admin' ? '🛡️ Admin' : '👤 Employee'}
+              </span>
+            </div>
+            <button
+              className="icon-btn icon-btn-sm sidebar-logout-btn"
+              onClick={logout}
+              title="Logout"
+            >
+              <LogOut size={15} />
+            </button>
+          </div>
+        ) : (
+          <div className="footer-badge">EurekaX v4.0</div>
+        )}
       </div>
     </aside>
   );
 }
+
