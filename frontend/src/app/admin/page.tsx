@@ -85,12 +85,12 @@ export default function AdminPage() {
   };
 
   const deactivate = async (userId: string) => {
-    if (!confirm('Deactivate this user?')) return;
+    if (!confirm('Delete this user?')) return;
     try {
       await deactivateUser(userId);
       loadUsers();
     } catch (err: any) {
-      alert(err.message || 'Failed to deactivate user');
+      alert(err.message || 'Failed to delete user');
     }
   };
 

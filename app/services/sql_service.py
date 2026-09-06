@@ -52,6 +52,7 @@ class SQLService:
 
     async def execute(
         self, db: AsyncSession, *, sql: str, source_name: str = "local",
+        connection_string: Optional[str] = None,
         user_id: Optional[str] = None, max_rows: int = 500,
     ) -> dict:
         """Execute a SQL query and return results."""
@@ -61,17 +62,32 @@ class SQLService:
             if source_name == "databricks":
                 return await self._execute_databricks(sql, max_rows)
 
-            # Default: local SQLite execution
-            result = await db.execute(text(sql))
-
-            if result.returns_rows:
-                columns = list(result.keys())
-                rows = [dict(zip(columns, row)) for row in result.fetchmany(max_rows)]
-                row_count = len(rows)
+            if connection_string:
+                # Dynamic external SQL connection (e.g., MySQL, Postgres)
+                engine = create_async_engine(connection_string, echo=False)
+                async with engine.begin() as conn:
+                    result = await conn.execute(text(sql))
+                    if result.returns_rows:
+                        columns = list(result.keys())
+                        rows = [dict(zip(columns, row)) for row in result.fetchmany(max_rows)]
+                        row_count = len(rows)
+                    else:
+                        columns = []
+                        rows = []
+                        row_count = result.rowcount or 0
+                await engine.dispose()
             else:
-                columns = []
-                rows = []
-                row_count = result.rowcount or 0
+                # Default: local SQLite execution
+                result = await db.execute(text(sql))
+
+                if result.returns_rows:
+                    columns = list(result.keys())
+                    rows = [dict(zip(columns, row)) for row in result.fetchmany(max_rows)]
+                    row_count = len(rows)
+                else:
+                    columns = []
+                    rows = []
+                    row_count = result.rowcount or 0
                 await db.commit()
 
             elapsed_ms = int((time.monotonic() - start) * 1000)

@@ -154,9 +154,17 @@ export default function Sidebar() {
         <div className="sidebar-section">
           <p className="section-label">Navigate</p>
           <div className="sidebar-nav-links">
+            <Link href={user?.role === 'admin' ? '/admin-home' : '/employee-home'} className="sidebar-nav-link">
+              <Layers size={15} />
+              <span>Home</span>
+            </Link>
             <Link href="/dashboard" className="sidebar-nav-link">
               <LayoutDashboard size={15} />
               <span>Dashboard</span>
+            </Link>
+            <Link href="/databases" className="sidebar-nav-link">
+              <Database size={15} />
+              <span>Databases</span>
             </Link>
             <Link href="/sql-editor" className="sidebar-nav-link">
               <Database size={15} />

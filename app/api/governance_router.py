@@ -212,6 +212,21 @@ async def grant_permission(
         details={"granted_to": target_user.username, "access_level": body.access_level},
     )
 
+    # ── Native MySQL Provisioning ──
+    try:
+        if entry.get("data_source_id") == "sql" or "MySQL" in entry.get("description", ""):
+            from app.services.sql_service import sql_service
+            MYSQL_URL = "mysql+aiomysql://root:root@localhost:3307/mysql"
+            table = entry["table_name"]
+            uname = target_user.username
+            # Create user if not exists and grant access
+            await sql_service.execute(db, sql=f"CREATE USER IF NOT EXISTS '{uname}'@'%' IDENTIFIED BY 'password';", connection_string=MYSQL_URL)
+            await sql_service.execute(db, sql=f"GRANT SELECT ON mysql.{table} TO '{uname}'@'%';", connection_string=MYSQL_URL)
+            await sql_service.execute(db, sql="FLUSH PRIVILEGES;", connection_string=MYSQL_URL)
+            logger.info(f"Granted native MySQL SELECT on {table} to {uname}")
+    except Exception as e:
+        logger.error(f"Failed to grant native MySQL permission: {e}")
+
     return {
         "id": perm.id,
         "user_id": perm.user_id,
@@ -232,11 +247,28 @@ async def revoke_permission(
     if not perm:
         raise HTTPException(status_code=404, detail="Permission not found")
 
+    user_res = await db.execute(select(User).where(User.id == perm.user_id))
+    target_user = user_res.scalar_one_or_none()
+
     await audit_service.log(
         db, user_id=admin.id, action="revoke_permission",
         resource_type="catalog_entry", resource_id=perm.resource_id,
-        details={"revoked_from": perm.user_id},
+        details={"revoked_from": target_user.username if target_user else perm.user_id},
     )
+
+    # ── Native MySQL Revocation ──
+    try:
+        entry = await catalog_service.get_entry(db, int(perm.resource_id))
+        if entry and target_user and (entry.get("data_source_id") == "sql" or "MySQL" in entry.get("description", "")):
+            from app.services.sql_service import sql_service
+            MYSQL_URL = "mysql+aiomysql://root:root@localhost:3307/mysql"
+            table = entry["table_name"]
+            uname = target_user.username
+            await sql_service.execute(db, sql=f"REVOKE SELECT ON mysql.{table} FROM '{uname}'@'%';", connection_string=MYSQL_URL)
+            await sql_service.execute(db, sql="FLUSH PRIVILEGES;", connection_string=MYSQL_URL)
+            logger.info(f"Revoked native MySQL SELECT on {table} from {uname}")
+    except Exception as e:
+        logger.error(f"Failed to revoke native MySQL permission: {e}")
 
     await db.delete(perm)
     await db.commit()

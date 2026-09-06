@@ -28,6 +28,9 @@ pandas==2.2.3
 openpyxl==3.1.5
 databricks-sql-connector==3.6.0
 
+# ── MongoDB ──
+pymongo==4.8.0
+
 # ── Step 4: Auth & RBAC ──
 sqlalchemy[asyncio]==2.0.25
 aiosqlite==0.19.0

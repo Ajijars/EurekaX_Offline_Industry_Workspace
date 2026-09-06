@@ -24,6 +24,7 @@ from app.api.query_router import query_router
 from app.api.workspace_router import workspace_router
 from app.api.pipeline_router import pipeline_router
 from app.api.jobs_router import jobs_router
+from app.api.database_router import database_router
 
 # Configure logging
 logging.basicConfig(
@@ -78,6 +79,7 @@ app.include_router(query_router)
 app.include_router(workspace_router)
 app.include_router(pipeline_router)
 app.include_router(jobs_router)
+app.include_router(database_router)
 
 # Mount static files (frontend)
 app.mount(
@@ -164,3 +166,5 @@ async def startup_event():
             logger.warning("✗ LangGraph agent workflow failed to compile")
     except Exception as ag_err:
         logger.warning(f"✗ LangGraph init error: {ag_err}")
+
+# Trigger reload 2

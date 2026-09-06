@@ -173,7 +173,11 @@ export async function changeUserRole(userId: string, role: string): Promise<Auth
 }
 
 export async function deactivateUser(userId: string): Promise<void> {
-  await authFetch(`${API_BASE}/auth/users/${userId}`, { method: 'DELETE' });
+  const res = await authFetch(`${API_BASE}/auth/users/${userId}`, { method: 'DELETE' });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(body.detail || `API error ${res.status}`);
+  }
 }
 
 export function logout(): void {

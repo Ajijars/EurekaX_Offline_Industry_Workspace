@@ -285,23 +285,23 @@ async def change_user_role(
 
 
 @auth_router.delete("/users/{user_id}")
-async def deactivate_user(
+async def delete_user(
     user_id: str,
     admin: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Deactivate a user account (admin only). Does not delete data."""
+    """Delete a user account (admin only)."""
     result = await db.execute(select(User).where(User.id == user_id))
     target = result.scalar_one_or_none()
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
 
     if target.id == admin.id:
-        raise HTTPException(status_code=400, detail="Cannot deactivate yourself")
+        raise HTTPException(status_code=400, detail="Cannot delete yourself")
 
-    target.is_active = False
-    target.updated_at = datetime.now(timezone.utc)
+    target_username = target.username
+    await db.delete(target)
     await db.commit()
 
-    await _log_audit(db, admin.id, "deactivate_user", f"user={target.username}")
-    return {"status": "deactivated", "user_id": user_id}
+    await _log_audit(db, admin.id, "delete_user", f"user={target_username}")
+    return {"status": "deleted", "user_id": user_id}

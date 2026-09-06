@@ -58,6 +58,10 @@ class Settings(BaseSettings):
     DATABRICKS_CATALOG: str = ""
     DATABRICKS_SCHEMA: str = ""
 
+    # MongoDB (optional)
+    MONGODB_URI: str = "mongodb://localhost:27017"
+    MONGODB_DEFAULT_DB: str = ""
+
     # JWT / Authentication
     JWT_SECRET_KEY: str = "eurekax-super-secret-change-me-in-production"
     JWT_ALGORITHM: str = "HS256"

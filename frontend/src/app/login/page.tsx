@@ -40,7 +40,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace('/');
+      const stored = typeof window !== 'undefined' ? localStorage.getItem('eurekax_user') : null;
+      const u = stored ? JSON.parse(stored) : null;
+      router.replace(u?.role === 'admin' ? '/admin-home' : '/employee-home');
     }
   }, [isAuthenticated, router]);
 
@@ -50,14 +52,15 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
+      let data;
       if (isRegister) {
-        const data = await register({ email, username, password });
+        data = await register({ email, username, password });
         setUser(data.user);
       } else {
-        const data = await login({ email, password });
+        data = await login({ email, password });
         setUser(data.user);
       }
-      router.replace('/');
+      router.replace(data.user.role === 'admin' ? '/admin-home' : '/employee-home');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
